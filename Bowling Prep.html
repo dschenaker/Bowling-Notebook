@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Arena Bowling League — Clean Sheet Hub V15</title>
+<style>
+:root{
+  --page-width: 1120px;
+  --page-height: 760px;
+  --page-padding: 26px;
+  --shell-bg: #f4f6fa;
+  --card-bg: #ffffff;
+  --line: #d7dce5;
+  --text: #1f2937;
+  --muted: #667085;
+  --nav-bg: #e9edf4;
+  --nav-active: #2f455f;
+  --header-band: #eaf4ff;
+  --shadow: 0 6px 20px rgba(15,23,42,.05);
+  --radius: 18px;
+  --font: -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  --lane:#ead8ab;
+  --board:#e4cb96;
+  --ink:#475467;
+  --print-page-size: 11in 8.5in;
+  --print-margin-top: .35in;
+  --print-margin-right: .35in;
+  --print-margin-bottom: .35in;
+  --print-margin-left: .35in;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#edf2f8;color:var(--text);font-family:var(--font);scroll-behavior:smooth}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+input,select,textarea{width:100%;border:0;outline:none;background:transparent;color:var(--text)}
+textarea{resize:vertical;min-height:44px}
+.app{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;background:#101826;color:#fff;padding:22px 18px;display:flex;flex-direction:column;gap:16px}
+.brand h1{margin:0;font-size:25px;line-height:1.05}
+.brand p{margin:6px 0 0;color:rgba(255,255,255,.68);font-size:13px}
+.side-card{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px}
+.side-card h2{margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7)}
+.page-list{display:grid;gap:10px}
+.page-jump{border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.06);color:#fff;padding:12px 13px;text-align:left;text-decoration:none}
+.page-jump strong{display:block;font-size:14px}
+.page-jump small{display:block;margin-top:4px;color:rgba(255,255,255,.62);line-height:1.25}
+.workspace{padding:18px 22px 28px}
+.toolbar,.editor-head{background:#fff;border:1px solid #dde4ee;border-radius:18px;box-shadow:var(--shadow)}
+.toolbar{display:flex;justify-content:space-between;align-items:end;gap:14px;flex-wrap:wrap;padding:14px 16px}
+.toolbar-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.toolbar label{color:var(--muted);font-size:13px}
+.toolbar select,.toolbar button{border:1px solid #d7dce5;border-radius:12px;background:#fff;padding:10px 12px}
+.toolbar .primary{background:var(--nav-active);color:#fff;border-color:var(--nav-active)}
+.editor-head{margin-top:14px;padding:16px 18px}
+.editor-head h2{margin:0 0 4px;font-size:22px}
+.editor-head p{margin:0;color:var(--muted);font-size:14px}
+.canvas{margin-top:18px;display:flex;flex-direction:column;gap:22px;align-items:center}
+.sheet{width:min(100%, var(--page-width));min-height:var(--page-height);background:var(--shell-bg);border:1px solid #dbe2ec;box-shadow:var(--shadow);padding:var(--page-padding);overflow:hidden;page-break-after:always}
+.sheet:last-child{page-break-after:auto}
+.sheet-inner{display:flex;flex-direction:column;gap:14px}
+.page-header{display:grid;grid-template-columns:1fr auto;align-items:start;gap:16px;padding-top:8px;border-top:20px solid var(--header-band)}
+.page-header h2{margin:0;font-size:32px;line-height:1.05;letter-spacing:-.02em}
+.page-header p{margin:5px 0 0;color:var(--muted);font-size:14px}
+.page-tab{display:inline-flex;align-items:center;justify-content:center;min-width:82px;height:36px;padding:0 14px;border-radius:14px;background:var(--nav-bg);font-weight:700;font-size:13px}
+.sheet-body{display:grid;grid-template-columns:1fr 92px;gap:14px;align-items:start}
+.rail{display:grid;gap:10px}
+.rail a{display:block;border:1px solid var(--line);background:var(--nav-bg);color:var(--text);border-radius:14px;padding:12px 10px;font-weight:700;text-decoration:none;text-align:center}
+.rail a.active{background:var(--nav-active);color:#fff;border-color:var(--nav-active)}
+.content{display:grid;gap:14px}
+.card{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.card h3{margin:0 0 10px;font-size:14px;letter-spacing:.01em}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.split{display:grid;grid-template-columns:.95fr 1.25fr;gap:16px;align-items:start}
+.stack{display:grid;gap:14px}
+.compact{display:flex;flex-direction:column;gap:8px}
+.compact label,.grid-4 label,.specto-fields label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px}
+.compact input,.compact textarea,.grid-4 input,.specto-fields input,.specto-fields select{border-bottom:1px solid var(--line);padding:0 0 6px 0}
+.clean-table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px}
+.clean-table thead th{background:#e8edf5;border:1px solid var(--line);text-align:left;padding:10px;font-size:12px}
+.clean-table tbody td{border:1px solid var(--line);padding:10px;font-size:12px;min-height:36px}
+.lined textarea{min-height:140px;line-height:1.75;background-image:linear-gradient(to bottom, transparent calc(1.75em - 1px), #d8dee8 0);background-size:100% 1.75em;padding-top:2px}
+.lane-wrap{width:100%;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;overflow:hidden}
+.specto-panel{display:grid;gap:12px}
+.specto-fields{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.small-note{font-size:12px;color:var(--muted)}
+.kicker{background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-weight:700;border-radius:14px;padding:12px 14px}
+.feet-strip-title{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.feet-strip-title span{font-size:12px;color:var(--muted)}
+@media (max-width:1150px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto}
+  .sheet-body,.split,.grid-4,.grid-2,.page-header,.specto-fields{grid-template-columns:1fr}
+  .rail{grid-template-columns:repeat(3,1fr)}
+}
+@media print{
+  @page{size:var(--print-page-size, auto);margin:var(--print-margin-top) var(--print-margin-right) var(--print-margin-bottom) var(--print-margin-left)}
+  html,body{background:#fff!important;margin:0!important;padding:0!important}
+  .sidebar,.toolbar,.editor-head{display:none!important}
+  .app,.workspace,.canvas{display:block!important;margin:0!important;padding:0!important;background:#fff!important}
+  .sheet{width:auto!important;min-height:auto!important;box-shadow:none!important;border:0!important;margin:0!important;padding:var(--page-padding)!important}
+}
+
+/* --- V15 iPad app layer --- */
+body.ios-app{
+  overscroll-behavior:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.app-draw-toolbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.app-draw-toolbar .seg{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 8px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+.app-draw-toolbar button,
+.app-draw-toolbar select{
+  border:1px solid #d7dce5;
+  border-radius:12px;
+  background:#fff;
+  padding:10px 12px;
+}
+.draw-toggle.active,
+.erase-toggle.active{
+  background:var(--nav-active)!important;
+  color:#fff!important;
+  border-color:var(--nav-active)!important;
+}
+.lane-wrap{
+  position:relative;
+  touch-action:none;
+}
+.lane-wrap svg{
+  display:block;
+  width:100%;
+  height:auto;
+}
+.lane-canvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  touch-action:none;
+}
+.draw-enabled .lane-canvas{
+  pointer-events:auto;
+}
+.lane-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:8px;
+}
+.lane-actions button{
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#fff;
+  padding:8px 10px;
+  font-size:12px;
+}
+.ipad-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:88px;
+  height:36px;
+  padding:0 12px;
+  border-radius:14px;
+  background:#ecfccb;
+  color:#3f6212;
+  font-weight:700;
+  font-size:12px;
+}
+.sidebar-toggle{display:none}
+@media (max-width:1150px){
+  .workspace{padding:12px}
+  .toolbar{position:sticky;top:0;z-index:50}
+  .sidebar{
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    width:290px;
+    transform:translateX(-105%);
+    transition:transform .24s ease;
+    z-index:60;
+    box-shadow:8px 0 24px rgba(0,0,0,.25);
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-toggle{display:inline-flex}
+  .sheet{width:100%;min-height:auto}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Sheet Hub</h1>
+      <p>Arena Bowling League</p>
+    </div>
+    <section class="side-card">
+      <h2>Pages</h2>
+      <div class="page-list" id="pageList"></div>
+    </section>
+  </aside>
+
+  <main class="workspace">
+    
+<header class="toolbar">
+  <div class="toolbar-group">
+    <button id="sidebarToggle" class="sidebar-toggle">Menu</button>
+    <label for="preset">Size preset</label>
+    <select id="preset">
+      <option value="ipad129">iPad Pro 12.9</option>
+      <option value="letter">US Letter</option>
+      <option value="tul">TUL Standard</option>
+      <option value="tulMini">TUL Mini</option>
+    </select>
+    <div class="ipad-badge">iPad Mode</div>
+  </div>
+  <div class="app-draw-toolbar">
+    <div class="seg">
+      <button id="drawToggle" class="draw-toggle" type="button">Draw</button>
+      <button id="eraseToggle" class="erase-toggle" type="button">Erase</button>
+    </div>
+    <div class="seg">
+      <label for="penColor">Ink</label>
+      <select id="penColor">
+        <option value="#2563eb">Blue</option>
+        <option value="#dc2626">Red</option>
+        <option value="#111827">Black</option>
+        <option value="#16a34a">Green</option>
+      </select>
+    </div>
+    <div class="seg">
+      <label for="penSize">Size</label>
+      <select id="penSize">
+        <option value="2">Fine</option>
+        <option value="4" selected>Medium</option>
+        <option value="6">Bold</option>
+      </select>
+    </div>
+    <div class="seg">
+      <button id="clearCurrent" type="button">Clear Current Lane</button>
+      <button id="clearAllDrawings" type="button">Clear All Drawings</button>
+      <button id="expAll" class="primary" type="button">Export all</button>
+    </div>
+  </div>
+</header>
+
+
+    <section class="editor-head">
+      <h2>V15 True Combination</h2>
+      <p>Built from the locked V15 layout with the added arsenal pages, SPECTO Analysis, and League Night structure.</p>
+    </section>
+
+    <section class="canvas" id="canvas"></section>
+  </main>
+</div>
+
+<template id="tpl-practice">
+  <article class="sheet">
+    <div class="sheet-inner">
+      <header class="page-header">
+        <div>
+          <h2>Practice Session</h2>
+          <p>Use this page during practice or coaching. Keep notes short and specific.</p>
+        </div>
+        <div class="page-tab">Practice</div>
+      </header>
+      <div class="sheet-body">
+        <div class="content">
+          <section class="card grid-4">
+            <label>Date<input type="text" placeholder="Date"></label>
+            <label>House<input type="text" placeholder="Location"></label>
+            <label>Lane<input type="text" placeholder="Lane"></label>
+            <label>Pattern<input type="text" placeholder="Pattern"></label>
+          </section>
+          <section class="card">
+            <h3>Session focus</h3>
+            <textarea rows="3" placeholder="Main focus, coach cues, or what you want to test today"></textarea>
+          </section>
+          <section class="card">
+            <h3>SPECTO notes</h3>
+            <div class="specto-fields">
+              <label>Speed<input type="text"></label>
+              <label>RPM<input type="text"></label>
+              <label>Breakpoint board<input type="text"></label>
+              <label>Entry angle<input type="text"></label>
+              <label>Launch angle<input type="text"></label>
+            </div>
+          </section>
+          <section class="card">
+            <h3>Miss tracker + active decision zone</h3>
+            <table class="clean-table">
+              <thead><tr><th>Miss</th><th>Tally</th><th>Shot</th><th>Result</th><th>What happened</th><th>Move</th></tr></thead>
+              <tbody>
+                <tr><td>High</td><td></td><td>1</td><td></td><td></td><td></td></tr>
+                <tr><td>Light</td><td></td><td>2</td><td></td><td></td><td></td></tr>
+                <tr><td>Flat 10</td><td></td><td>3</td><td></td><td></td><td></td></tr>
+                <tr><td>Pull</td><td></td><td>4</td><td></td><td></td><td></td></tr>
+                <tr><td>Push</td><td></td><td>5</td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="card lined">
+            <h3>Notes / observations</h3>
+            <textarea rows="10"></textarea>
+          </section>
+        </div>
+        <nav class="rail" data-rail></nav>
+      </div>
+    </div>
+  </article>
+</template>
+
+<template id="tpl-ball">
+  <article class="sheet">
+    <div class="sheet-inner">
+      <header class="page-header">
+        <div>
+          <h2></h2>
+          <p></p>
+        </div>
+        <div class="page-tab">Ball</div>
+      </header>
+      <div class="sheet-body">
+        <div class="content">
+          <section class="split">
+            <div class="stack">
+              <div class="card compact">
+                <h3>Ball profile</h3>
+                <label>Role<input type="text"></label>
+                <label>Surface<input type="text"></label>
+                <label>Polish<input type="text"></label>
+              </div>
+              <div class="card compact">
+                <h3>Use case</h3>
+                <textarea rows="5"></textarea>
+              </div>
+              <div class="card compact">
+                <h3>Expected motion</h3>
+                <textarea rows="4" placeholder="Read / Shape / Backend"></textarea>
+              </div>
+              <div class="card compact">
+                <h3>Gap from ideal + adjustment</h3>
+                <label>Reads early<input type="text"></label>
+                <label>Reads late<input type="text"></label>
+                <label>Too flat<input type="text"></label>
+                <label>Too sharp<input type="text"></label>
+                <label>Move made<input type="text"></label>
+              </div>
+              <div class="card compact">
+                <h3>Weekly surface &amp; prep log</h3>
+                <label>Week / date<input type="text"></label>
+                <label>Cleaned with<input type="text"></label>
+                <label>Surface before<input type="text"></label>
+                <label>Surface after<input type="text"></label>
+                <label>How I prepared it<input type="text"></label>
+                <label>Why I chose this prep<input type="text"></label>
+              </div>
+            </div>
+
+            <div class="stack">
+              <div class="card">
+                <h3>Main lane diagram</h3>
+                <div class="small-note">Built to follow the same left-to-right orientation as SPECTO. Use this as the main movement map.</div>
+                <div class="lane-wrap mainLaneHost"></div><div class="lane-actions"><button class="clear-lane" type="button">Clear lane</button></div>
+              </div>
+
+              <div class="card">
+                <div class="feet-strip-title">
+                  <h3 style="margin:0">Feet / dots / arrows strip</h3>
+                  <span>Use for starting position and alignment notes</span>
+                </div>
+                <div class="lane-wrap feetStripHost"></div><div class="lane-actions"><button class="clear-lane" type="button">Clear strip</button></div>
+              </div>
+
+              <div class="card specto-panel">
+                <h3>SPECTO / actual capture</h3>
+                <div class="specto-fields">
+                  <label>Speed<input type="text"></label>
+                  <label>RPM<input type="text"></label>
+                  <label>Breakpoint board<input type="text"></label>
+                  <label>Entry board<input type="text"></label>
+                  <label>Launch angle<input type="text"></label>
+                </div>
+                <div class="lane-wrap actualLaneHost"></div><div class="lane-actions"><button class="clear-lane" type="button">Clear lane</button></div>
+                <div class="small-note">Ideal entry is between 1 and 3. Best continuation is through 3 → 5 → 9.</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="grid-2">
+            <div class="card compact">
+              <h3>Adjustment logic</h3>
+              <label>If high<input type="text"></label>
+              <label>If light<input type="text"></label>
+              <label>If flat 10<input type="text"></label>
+              <label>If Brooklyn<input type="text"></label>
+            </div>
+            <div class="card lined">
+              <h3>Session notes</h3>
+              <textarea rows="8"></textarea>
+            </div>
+          </section>
+        </div>
+        <nav class="rail" data-rail></nav>
+      </div>
+    </div>
+  </article>
+</template>
+
+<template id="tpl-specto">
+  <article class="sheet">
+    <div class="sheet-inner">
+      <header class="page-header">
+        <div>
+          <h2>SPECTO Analysis</h2>
+          <p>Use this page for captured metrics, lane review, and ball comparison.</p>
+        </div>
+        <div class="page-tab">SPECTO</div>
+      </header>
+      <div class="sheet-body">
+        <div class="content">
+          <section class="card">
+            <h3>Session overview</h3>
+            <div class="specto-fields">
+              <label>Date<input type="text"></label>
+              <label>House<input type="text"></label>
+              <label>Lane<input type="text"></label>
+              <label>Pattern<input type="text"></label>
+              <label>Ball used<input type="text"></label>
+            </div>
+          </section>
+          <section class="card">
+            <h3>SPECTO metrics</h3>
+            <div class="specto-fields">
+              <label>Speed<input type="text"></label>
+              <label>RPM<input type="text"></label>
+              <label>Breakpoint board<input type="text"></label>
+              <label>Entry board<input type="text"></label>
+              <label>Launch angle<input type="text"></label>
+            </div>
+          </section>
+          <section class="grid-2">
+            <div class="card">
+              <h3>Reference lane</h3>
+              <div class="lane-wrap mainLaneHost"></div><div class="lane-actions"><button class="clear-lane" type="button">Clear lane</button></div>
+            </div>
+            <div class="card">
+              <h3>Actual capture lane</h3>
+              <div class="lane-wrap actualLaneHost"></div><div class="lane-actions"><button class="clear-lane" type="button">Clear lane</button></div>
+            </div>
+          </section>
+          <section class="card">
+            <h3>Ball-to-ball comparison</h3>
+            <table class="clean-table">
+              <thead><tr><th>Ball</th><th>Speed</th><th>RPM</th><th>Breakpoint</th><th>Entry</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td>Ghost</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>Evoke Hysteria</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>Forge Ember</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>Rhino 11lb Red</td><td></td><td></td><td></td><td></td><td></td></tr>
+                <tr><td>Rhino 14lb Blue</td><td></td><td></td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="card lined">
+            <h3>Analysis notes</h3>
+            <textarea rows="10"></textarea>
+          </section>
+        </div>
+        <nav class="rail" data-rail></nav>
+      </div>
+    </div>
+  </article>
+</template>
+
+<template id="tpl-league">
+  <article class="sheet">
+    <div class="sheet-inner">
+      <header class="page-header">
+        <div>
+          <h2>League Night</h2>
+          <p>Scoring, ball usage, adjustments, and key observations for league play.</p>
+        </div>
+        <div class="page-tab">League</div>
+      </header>
+      <div class="sheet-body">
+        <div class="content">
+          <section class="card grid-4">
+            <label>Date<input type="text"></label>
+            <label>House<input type="text"></label>
+            <label>Lane Pair<input type="text"></label>
+            <label>Pattern<input type="text"></label>
+          </section>
+          <section class="card">
+            <h3>League scoring</h3>
+            <table class="clean-table">
+              <thead><tr><th>Game</th><th>Score</th><th>Ball Used Most</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td>Game 1</td><td></td><td></td><td></td></tr>
+                <tr><td>Game 2</td><td></td><td></td><td></td></tr>
+                <tr><td>Game 3</td><td></td><td></td><td></td></tr>
+                <tr><td>Series</td><td></td><td></td><td></td></tr>
+              </tbody>
+            </table>
+          </section>
+          <section class="grid-2">
+            <div class="card">
+              <h3>Lane / move tracking</h3>
+              <div class="lane-wrap mainLaneHost"></div><div class="lane-actions"><button class="clear-lane" type="button">Clear lane</button></div>
+            </div>
+            <div class="card compact">
+              <h3>Ball progression through the night</h3>
+              <label>Started with<input type="text"></label>
+              <label>Transition move<input type="text"></label>
+              <label>Late game ball<input type="text"></label>
+              <label>Best ball tonight<input type="text"></label>
+            </div>
+          </section>
+          <section class="card lined">
+            <h3>League notes</h3>
+            <textarea rows="10" placeholder="Scoring pace, carry, transition, useful moves, what to prep for next week"></textarea>
+          </section>
+        </div>
+        <nav class="rail" data-rail></nav>
+      </div>
+    </div>
+  </article>
+</template>
+
+<script>
+const PAGES = [
+  {id:"practice", title:"Practice Session", note:"Session flow and live notes", tpl:"tpl-practice"},
+  {id:"ghost", title:"Motiv Ghost", note:"Control page", tpl:"tpl-ball"},
+  {id:"evoke", title:"Motiv Evoke Hysteria", note:"Early read / pearl page", tpl:"tpl-ball"},
+  {id:"ember", title:"Motiv Forge Ember", note:"Benchmark / transition page", tpl:"tpl-ball"},
+  {id:"rhinoRed", title:"Brunswick Rhino 11lb (Red)", note:"Light reactive / spare-control page", tpl:"tpl-ball"},
+  {id:"rhinoBlue", title:"Brunswick Rhino 14lb (Blue)", note:"Reactive bridge / stronger Rhino page", tpl:"tpl-ball"},
+  {id:"specto", title:"SPECTO Analysis", note:"Metrics and lane capture", tpl:"tpl-specto"},
+  {id:"league", title:"League Night", note:"Scoring + notes", tpl:"tpl-league"}
+];
+
+const PRESETS = {
+  ipad129:{w:"1120px",h:"760px",pad:"26px",size:"11in 8.5in",m:[".35in",".35in",".35in",".35in"]},
+  letter:{w:"816px",h:"1056px",pad:"28px",size:"letter portrait",m:[".45in",".45in",".45in",".45in"]},
+  tul:{w:"816px",h:"1056px",pad:"34px 28px 28px 44px",size:"letter portrait",m:[".4in",".35in",".4in",".65in"]},
+  tulMini:{w:"576px",h:"864px",pad:"24px 18px 24px 34px",size:"5.5in 8.5in",m:[".28in",".25in",".28in",".45in"]}
+};
+
+function setPreset(name){
+  const p = PRESETS[name];
+  document.documentElement.style.setProperty("--page-width", p.w);
+  document.documentElement.style.setProperty("--page-height", p.h);
+  document.documentElement.style.setProperty("--page-padding", p.pad);
+  document.documentElement.style.setProperty("--print-page-size", p.size);
+  document.documentElement.style.setProperty("--print-margin-top", p.m[0]);
+  document.documentElement.style.setProperty("--print-margin-right", p.m[1]);
+  document.documentElement.style.setProperty("--print-margin-bottom", p.m[2]);
+  document.documentElement.style.setProperty("--print-margin-left", p.m[3]);
+}
+
+function laneSVGBlankMain(){
+  return `
+  <svg viewBox="0 0 920 220" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="18" width="860" height="22" fill="#d9dadc" stroke="#bfc4cb"/>
+    <rect x="30" y="172" width="860" height="22" fill="#d9dadc" stroke="#bfc4cb"/>
+    <rect x="30" y="40" width="860" height="132" fill="#ead8ab" stroke="#c9b27c" stroke-width="1.2"/>
+    <g stroke="#e4cb96" stroke-width="1">
+      ${Array.from({length:39},(_,i)=>{ const x=30+860*i/39; return `<line x1="${x.toFixed(2)}" y1="40" x2="${x.toFixed(2)}" y2="172"/>`;}).join("")}
+    </g>
+    <line x1="112" y1="40" x2="112" y2="172" stroke="#475467" stroke-width="1.3"/>
+    <g fill="#111827">
+      <circle cx="76" cy="65.4" r="2.3"/>
+      <circle cx="76" cy="85.7" r="2.3"/>
+      <circle cx="76" cy="106.0" r="2.3"/>
+      <circle cx="76" cy="126.3" r="2.3"/>
+      <circle cx="76" cy="146.6" r="2.3"/>
+    </g>
+    <g stroke="#c2410c" stroke-width="2.0" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="152,61.4 160,65.4 152,69.4"/>
+      <polyline points="170,74.9 178,78.9 170,82.9"/>
+      <polyline points="188,88.5 196,92.5 188,96.5"/>
+      <polyline points="206,102.0 214,106.0 206,110.0"/>
+      <polyline points="188,115.5 196,119.5 188,123.5"/>
+      <polyline points="170,129.1 178,133.1 170,137.1"/>
+      <polyline points="152,142.6 160,146.6 152,150.6"/>
+    </g>
+    <g fill="#6b7280" font-size="10" text-anchor="middle">
+      ${[10,15,20,25,30,35].map((b)=>{ const x = 30 + 860*b/39; return `<text x="${x.toFixed(2)}" y="160">${b}</text>`;}).join("")}
+    </g>
+    <rect x="618" y="62" width="42" height="4" rx="2" fill="#9ca3af"/>
+    <rect x="688" y="80" width="42" height="4" rx="2" fill="#9ca3af"/>
+    <rect x="754" y="98" width="42" height="4" rx="2" fill="#9ca3af"/>
+    <circle cx="612" cy="106" r="14" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <g stroke="#94a3b8" stroke-width="1.2" fill="#fff">
+      <circle cx="812" cy="106" r="8"/>
+      <circle cx="830" cy="96" r="8"/><circle cx="830" cy="116" r="8"/>
+      <circle cx="848" cy="86" r="8"/><circle cx="848" cy="106" r="8"/><circle cx="848" cy="126" r="8"/>
+      <circle cx="866" cy="76" r="8"/><circle cx="866" cy="96" r="8"/><circle cx="866" cy="116" r="8"/><circle cx="866" cy="136" r="8"/>
+    </g>
+    <g fill="#475467" font-size="8" text-anchor="middle">
+      <text x="812" y="108.5">1</text>
+      <text x="830" y="98.5">2</text><text x="830" y="118.5">3</text>
+      <text x="848" y="88.5">4</text><text x="848" y="108.5">5</text><text x="848" y="128.5">6</text>
+      <text x="866" y="78.5">7</text><text x="866" y="98.5">8</text><text x="866" y="118.5">9</text><text x="866" y="138.5">10</text>
+    </g>
+    <g fill="#475467" font-size="10">
+      <text x="44" y="33">Channel</text>
+      <text x="44" y="186">Channel</text>
+      <text x="52" y="62">Approach</text>
+      <text x="118" y="186">Foul Line</text>
+      <text x="182" y="186">Arrows</text>
+      <text x="610" y="186">Breakpoint</text>
+      <text x="798" y="186">Pin Deck</text>
+      <text x="778" y="58">Ideal entry: between 1 &amp; 3</text>
+      <text x="772" y="70">Best continuation: 3 → 5 → 9</text>
+    </g>
+  </svg>`;
+}
+
+function feetStripSVG(){
+  return `
+  <svg viewBox="0 0 920 120" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="20" width="880" height="80" fill="#f8fafc" stroke="#d7dce5"/>
+    <line x1="72" y1="20" x2="72" y2="100" stroke="#475467" stroke-width="1.2"/>
+    <line x1="20" y1="86" x2="900" y2="86" stroke="#475467" stroke-width="1.2"/>
+    <g stroke="#e3e7ef" stroke-width="1">
+      ${Array.from({length:39},(_,i)=>{ const x=20+880*i/39; return `<line x1="${x.toFixed(2)}" y1="20" x2="${x.toFixed(2)}" y2="100"/>`;}).join("")}
+    </g>
+    <g fill="#6b7280" font-size="10" text-anchor="middle">
+      ${[5,10,15,20,25,30,35].map((b)=>{ const x = 20 + 880*b/39; return `<text x="${x.toFixed(2)}" y="78">▲</text><text x="${x.toFixed(2)}" y="98">${b}</text>`;}).join("")}
+    </g>
+    <g fill="#64748b">
+      <circle cx="34" cy="42" r="2.6"/><circle cx="34" cy="56" r="2.6"/>
+      <circle cx="48" cy="42" r="2.6"/><circle cx="48" cy="56" r="2.6"/>
+    </g>
+    <text x="28" y="34" font-size="11" fill="#475467">Feet placement strip</text>
+    <text x="82" y="34" font-size="10" fill="#667085">Use this for starting line, dots, and arrows only</text>
+  </svg>`;
+}
+
+function ballConfig(id){
+  return {
+    ghost:{
+      subtitle:"Control page using the locked-in lane system.",
+      badge:"Ghost",
+      role:"Control / blend / read piece",
+      surface:"3000 + light compound",
+      polish:"None",
+      use:"Fresh to readable transition when you want control",
+      expected:"Smooth and controlled / slightly strong but predictable"
+    },
+    evoke:{
+      subtitle:"Early read / pearl lane reader page.",
+      badge:"Evoke",
+      role:"Early read / control / lane reader",
+      surface:"Track weekly",
+      polish:"Track weekly",
+      use:"Reads lane truth earliest in the bag",
+      expected:"Earlier read with a defined move downlane"
+    },
+    ember:{
+      subtitle:"Benchmark and transition page.",
+      badge:"Ember",
+      role:"Benchmark / strike ball / transition",
+      surface:"Track weekly",
+      polish:"Track weekly",
+      use:"Trusted benchmark, especially on worn pattern",
+      expected:"Smooth and controlled to slightly strong but predictable"
+    },
+    rhinoRed:{
+      subtitle:"11lb red Rhino page.",
+      badge:"Rhino Red",
+      role:"Spare / light reactive control",
+      surface:"Track weekly",
+      polish:"Track weekly",
+      use:"Spare line and straighter control",
+      expected:"Straight with minimal finish"
+    },
+    rhinoBlue:{
+      subtitle:"14lb blue Rhino page.",
+      badge:"Rhino Blue",
+      role:"Reactive bridge / stronger Rhino option",
+      surface:"Track weekly",
+      polish:"Track weekly",
+      use:"Transition bridge and closest hybrid-style look in bag",
+      expected:"Controlled turn-over with more pop than the red Rhino"
+    }
+  }[id];
+}
+
+function applyBallDefaults(el, page){
+  const cfg = ballConfig(page.id);
+  if(!cfg) return;
+  el.querySelector(".page-header h2").textContent = page.title;
+  el.querySelector(".page-header p").textContent = cfg.subtitle;
+  el.querySelector(".page-tab").textContent = cfg.badge;
+  const inputs = el.querySelectorAll("input, textarea");
+  const labels = [...el.querySelectorAll("label")];
+  const setByPrefix = (prefix, value) => {
+    const label = labels.find(l => l.textContent.trim().startsWith(prefix));
+    const field = label && label.querySelector("input, textarea");
+    if(field) field.value = value;
+  };
+  const setCardText = (heading, value) => {
+    const card = [...el.querySelectorAll(".card")].find(c => c.querySelector("h3")?.textContent.trim() === heading);
+    const area = card?.querySelector("textarea");
+    if(area) area.value = value;
+  };
+  setByPrefix("Role", cfg.role);
+  setByPrefix("Surface", cfg.surface);
+  setByPrefix("Polish", cfg.polish);
+  setCardText("Use case", cfg.use);
+  setCardText("Expected motion", cfg.expected);
+}
+
+function buildSidebar(){
+  const list = document.getElementById("pageList");
+  list.innerHTML = "";
+  PAGES.forEach(p=>{
+    const a = document.createElement("a");
+    a.className = "page-jump";
+    a.href = "#" + p.id;
+    a.innerHTML = `<strong>${p.title}</strong><small>${p.note}</small>`;
+    list.appendChild(a);
+  });
+}
+
+function buildRail(currentId){
+  return PAGES.map(p=>`<a href="#${p.id}" class="${p.id===currentId?'active':''}">${p.title.split(' ').slice(0,2).join(' ')}</a>`).join("");
+}
+
+function renderPages(){
+  const canvas = document.getElementById("canvas");
+  canvas.innerHTML = "";
+  PAGES.forEach(page=>{
+    const tpl = document.getElementById(page.tpl);
+    const el = tpl.content.firstElementChild.cloneNode(true);
+    el.id = page.id;
+    el.dataset.pageId = page.id;
+    el.querySelectorAll("[data-rail]").forEach(r=>r.innerHTML = buildRail(page.id));
+    el.querySelectorAll(".mainLaneHost").forEach(n=>n.innerHTML = laneSVGBlankMain());
+    el.querySelectorAll(".actualLaneHost").forEach(n=>n.innerHTML = laneSVGBlankMain());
+    el.querySelectorAll(".ghostLaneHost").forEach(n=>n.innerHTML = laneSVGBlankMain());
+    el.querySelectorAll(".feetStripHost").forEach(n=>n.innerHTML = feetStripSVG());
+    if(page.tpl === "tpl-ball") applyBallDefaults(el, page);
+    canvas.appendChild(el);
+  });
+}
+
+document.getElementById("expAll").onclick = ()=>window.print();
+document.getElementById("preset").onchange = e => setPreset(e.target.value);
+
+setPreset("ipad129");
+buildSidebar();
+renderPages();
+</script>
+
+<script>
+(function(){
+  document.body.classList.add('ios-app');
+
+  const STORE_KEY = 'arena-bowling-v15-ipad-layer-v2';
+  let appState = {
+    drawMode: false,
+    eraseMode: false,
+    penColor: '#2563eb',
+    penSize: 4,
+    drawings: {},
+    fields: {}
+  };
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(parsed && typeof parsed === 'object'){
+          appState = Object.assign(appState, parsed);
+        }
+      }
+    }catch(e){}
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(appState)); }catch(e){}
+  }
+  function slug(s){
+    return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+  }
+  function getPageId(el){
+    return el.closest('.sheet')?.id || 'page';
+  }
+  function resizeCanvas(canvas){
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = Math.max(80, rect.width);
+    const cssH = Math.max(60, rect.height);
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function getCtx(canvas){
+    const ctx = canvas.getContext('2d');
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    return ctx;
+  }
+  function redrawCanvas(canvas){
+    resizeCanvas(canvas);
+    const ctx = getCtx(canvas);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const strokes = appState.drawings[canvas.dataset.drawId] || [];
+    strokes.forEach(stroke=>{
+      if(!stroke.points || !stroke.points.length) return;
+      ctx.save();
+      if(stroke.erase){
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = stroke.color;
+      }
+      ctx.lineWidth = stroke.size;
+      ctx.beginPath();
+      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+      for(let i=1;i<stroke.points.length;i++) ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+  function pointFromEvent(canvas, e){
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches && e.touches[0] && e.touches[0].clientX);
+    const clientY = e.clientY ?? (e.touches && e.touches[0] && e.touches[0].clientY);
+    return {x: clientX - rect.left, y: clientY - rect.top};
+  }
+  function attachCanvas(canvas){
+    let drawing = false;
+    let current = null;
+    const start = (e)=>{
+      if(!appState.drawMode && !appState.eraseMode) return;
+      e.preventDefault();
+      drawing = true;
+      current = {color: appState.penColor, size: Number(appState.penSize), erase: appState.eraseMode, points: []};
+      current.points.push(pointFromEvent(canvas, e));
+    };
+    const move = (e)=>{
+      if(!drawing || !current) return;
+      e.preventDefault();
+      const pt = pointFromEvent(canvas, e);
+      current.points.push(pt);
+      const ctx = getCtx(canvas);
+      const n = current.points.length;
+      ctx.save();
+      if(current.erase){
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
+      } else {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.strokeStyle = current.color;
+      }
+      ctx.lineWidth = current.size;
+      ctx.beginPath();
+      ctx.moveTo(current.points[n-2].x, current.points[n-2].y);
+      ctx.lineTo(current.points[n-1].x, current.points[n-1].y);
+      ctx.stroke();
+      ctx.restore();
+    };
+    const end = ()=>{
+      if(!drawing || !current) return;
+      drawing = false;
+      const id = canvas.dataset.drawId;
+      if(!appState.drawings[id]) appState.drawings[id] = [];
+      appState.drawings[id].push(current);
+      current = null;
+      saveState();
+    };
+    canvas.addEventListener('pointerdown', start);
+    canvas.addEventListener('pointermove', move);
+    canvas.addEventListener('pointerup', end);
+    canvas.addEventListener('pointercancel', end);
+    canvas.addEventListener('touchstart', start, {passive:false});
+    canvas.addEventListener('touchmove', move, {passive:false});
+    canvas.addEventListener('touchend', end, {passive:false});
+  }
+
+  function setupLaneCanvases(){
+    document.querySelectorAll('.lane-wrap').forEach((wrap, idx)=>{
+      if(wrap.querySelector('.lane-canvas')) return;
+      const canvas = document.createElement('canvas');
+      canvas.className = 'lane-canvas';
+      canvas.dataset.drawId = getPageId(wrap) + '__lane_' + idx;
+      wrap.appendChild(canvas);
+      attachCanvas(canvas);
+      redrawCanvas(canvas);
+    });
+  }
+
+  function syncUi(){
+    document.body.classList.toggle('draw-enabled', appState.drawMode || appState.eraseMode);
+    document.getElementById('drawToggle')?.classList.toggle('active', appState.drawMode);
+    document.getElementById('eraseToggle')?.classList.toggle('active', appState.eraseMode);
+    const pc = document.getElementById('penColor'); if(pc) pc.value = appState.penColor;
+    const ps = document.getElementById('penSize'); if(ps) ps.value = String(appState.penSize);
+  }
+
+  function setupPersistence(){
+    let idx = 0;
+    document.querySelectorAll('input, textarea, select').forEach(el=>{
+      if(['preset','penColor','penSize'].includes(el.id)) return;
+      if(!el.dataset.persistId){
+        const label = el.closest('label')?.textContent?.trim() || el.closest('.card')?.querySelector('h3')?.textContent?.trim() || 'field';
+        el.dataset.persistId = getPageId(el) + '__' + slug(label) + '__' + (idx++);
+      }
+      const key = el.dataset.persistId;
+      if(appState.fields[key] != null) el.value = appState.fields[key];
+      el.addEventListener('input', ()=>{
+        appState.fields[key] = el.value;
+        saveState();
+      });
+    });
+  }
+
+  function clearCanvasForButton(btn){
+    const canvas = btn.closest('.card')?.querySelector('.lane-canvas');
+    if(!canvas) return;
+    delete appState.drawings[canvas.dataset.drawId];
+    redrawCanvas(canvas);
+    saveState();
+  }
+
+  function initControls(){
+    document.getElementById('drawToggle')?.addEventListener('click', ()=>{
+      appState.drawMode = !appState.drawMode;
+      if(appState.drawMode) appState.eraseMode = false;
+      saveState(); syncUi();
+    });
+    document.getElementById('eraseToggle')?.addEventListener('click', ()=>{
+      appState.eraseMode = !appState.eraseMode;
+      if(appState.eraseMode) appState.drawMode = false;
+      saveState(); syncUi();
+    });
+    document.getElementById('penColor')?.addEventListener('change', e=>{ appState.penColor = e.target.value; saveState(); });
+    document.getElementById('penSize')?.addEventListener('change', e=>{ appState.penSize = Number(e.target.value); saveState(); });
+    document.getElementById('clearCurrent')?.addEventListener('click', ()=>{
+      const first = document.querySelector('.lane-canvas');
+      if(!first) return;
+      delete appState.drawings[first.dataset.drawId];
+      redrawCanvas(first);
+      saveState();
+    });
+    document.getElementById('clearAllDrawings')?.addEventListener('click', ()=>{
+      appState.drawings = {};
+      document.querySelectorAll('.lane-canvas').forEach(redrawCanvas);
+      saveState();
+    });
+    document.querySelectorAll('.clear-lane').forEach(btn=>{
+      btn.addEventListener('click', ()=> clearCanvasForButton(btn));
+    });
+    document.getElementById('sidebarToggle')?.addEventListener('click', ()=>{
+      document.querySelector('.sidebar')?.classList.toggle('open');
+    });
+  }
+
+  loadState();
+
+  function bootAppLayer(){
+    setupLaneCanvases();
+    setupPersistence();
+    initControls();
+    syncUi();
+    window.addEventListener('resize', ()=> document.querySelectorAll('.lane-canvas').forEach(redrawCanvas));
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bootAppLayer);
+  } else {
+    bootAppLayer();
+  }
+})();
+</script>
+
+</body>
+</html>
